@@ -35,8 +35,18 @@ class UserController {                  // створюємо класс для 
         return res.json({token});                              // повертаємо токен на клієнта
     }
 
-    async login (req,res) {             // метод логіювання (входу)
-
+    async login (req, res, next) {             // метод логіювання (входу)
+        const {email, password} = req.body;    // отримуємо з запиту значення імейла, пароля
+        const user = await User.findOne({where: {email}}); // шукаємо в базі запис з таким імейлом
+        if (!user){                                        
+            return next(ApiError.internal('Даний користувач не зареєстрований')); 
+        }
+        let comparePassword = bcrypt.compareSync(password, user.password);     //  виконуємо порівняння пароля з хешем пароля в БД
+        if (!comparePassword) {
+            return next(ApiError.internal('Введено не вірний пароль'));
+        }
+        const token = generateJwt (user.id, user.email, user.role); // викликаємо функцію генерації токена
+        return res.json({token});                              // повертаємо токен на клієнта
     }
 
     async check(req, res, next) {       // метод перевірки входу
