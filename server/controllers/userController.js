@@ -50,11 +50,8 @@ class UserController {                  // створюємо класс для 
     }
 
     async check(req, res, next) {       // метод перевірки входу
-        const {id} = req.query          // використовуємо диструктизатор {}, щоб витягнути з запиту лише id
-        if(!id){                        // якщо в запиті немає id
-           return next(ApiError.badRequest('id not specified'))  // активуємо виконання методу badRequest, і передаємо причину в повідомленні
-        }
-        res.json(id);
+        const token = generateJwt(req.user.id, req.user.email, req.user.role);
+        return res.json({token});
     }
 }
 
